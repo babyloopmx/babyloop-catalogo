@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>babyloop · Catálogo</title>
+<meta name="description" content="Lo que tu bebé necesita, sin gastar de más. Catálogo en tiempo real de Baby Loop.">
+<!-- Tipografías de marca: Nunito (títulos) y Nunito Sans (cuerpo) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BABYLOOP · CATÁLOGO · v2
+   Novedades: filtros en la URL, precios con promoción,
+   carrusel de fotos por producto.
+   Colores tomados del Brand Kit 2026.
+   ============================================================ */
+:root{
+  --sage:        #9ecab8;  /* Principal */
+  --sage-oscuro: #6aaa94;  /* Hover / borde */
+  --sage-claro:  #daf0e8;  /* Fondos verdes */
+  --beige-calido:#d4b580;  /* Acento dorado */
+  --beige-claro: #f5e9d0;  /* Fondos cálidos */
+  --gris:        #7a7a7a;  /* Logotipo / texto secundario */
+  --crema:       #f5f3ef;  /* Fondo base */
+  --carbon:      #3a3a3a;  /* Texto principal */
+  --blanco:      #ffffff;
+  --radio: 16px;
+  --sombra: 0 2px 10px rgba(58,58,58,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Nunito Sans',sans-serif;
+  background:var(--crema);
+  color:var(--carbon);
+  font-size:15px;line-height:1.5;
+}
+h1,h2,h3{font-family:'Nunito',sans-serif}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ---------- ENCABEZADO ---------- */
+header{background:var(--crema);padding:28px 16px 18px;text-align:center}
+.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icono{
+  width:52px;height:52px;border-radius:50%;
+  border:2.5px solid var(--sage);
+  display:flex;align-items:center;justify-content:center;
+  background:var(--blanco);
+}
+.logo-icono svg{width:28px;height:28px;stroke:var(--gris)}
+.wordmark{font-family:'Nunito',sans-serif;font-weight:800;font-size:34px;color:var(--gris);letter-spacing:-.5px}
+.tagline{color:var(--gris);font-size:14px;margin-top:4px}
+
+/* ---------- BARRA DE HERRAMIENTAS ---------- */
+.toolbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(245,243,239,.95);backdrop-filter:blur(8px);
+  padding:10px 16px;display:flex;gap:8px;align-items:center;
+  max-width:1100px;margin:0 auto;
+}
+.btn-filtros{
+  display:flex;align-items:center;gap:6px;
+  background:var(--blanco);border:1.5px solid var(--sage);
+  color:var(--carbon);font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;
+  padding:9px 16px;border-radius:999px;transition:background .15s;
+}
+.btn-filtros:hover{background:var(--sage-claro)}
+.btn-filtros .num{
+  background:var(--sage-oscuro);color:#fff;border-radius:999px;
+  font-size:11px;min-width:19px;height:19px;line-height:19px;text-align:center;display:none;
+}
+.btn-filtros.activo .num{display:inline-block}
+select.orden{
+  appearance:none;-webkit-appearance:none;
+  background:var(--blanco) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="%237a7a7a" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>') no-repeat right 14px center;
+  border:1.5px solid #e4e0d8;border-radius:999px;
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;
+  color:var(--carbon);padding:9px 34px 9px 16px;
+}
+.contador{margin-left:auto;font-size:13px;color:var(--gris);font-weight:600;white-space:nowrap}
+.contador strong{color:var(--sage-oscuro)}
+
+/* ---------- PANEL DE FILTROS ---------- */
+.panel-filtros{max-width:1100px;margin:0 auto;padding:6px 16px 14px;display:none}
+.panel-filtros.abierto{display:block}
+.grupo{margin-bottom:12px}
+.grupo-titulo{
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sage-oscuro);margin-bottom:7px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  background:var(--blanco);border:1.5px solid #e4e0d8;border-radius:999px;
+  padding:6px 14px;font-size:13px;font-weight:600;color:var(--carbon);transition:all .12s;
+}
+.chip:hover{border-color:var(--sage)}
+.chip.on{background:var(--sage);border-color:var(--sage);color:#fff}
+/* El chip de oferta lleva el acento dorado de marca */
+.chip.oferta.on{background:var(--beige-calido);border-color:var(--beige-calido)}
+.panel-acciones{display:flex;gap:16px;align-items:center;margin-top:4px}
+.limpiar{
+  font-size:13px;font-weight:700;color:var(--gris);
+  text-decoration:underline;text-underline-offset:3px;
+}
+.limpiar:hover{color:var(--carbon)}
+.copiar-vista{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--beige-claro);color:var(--carbon);
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;
+  padding:7px 14px;border-radius:999px;transition:filter .15s;
+}
+.copiar-vista:hover{filter:brightness(.97)}
+
+/* ---------- GRID ---------- */
+.grid{
+  max-width:1100px;margin:0 auto;padding:8px 16px 40px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:960px){.grid{grid-template-columns:repeat(4,1fr);gap:18px}}
+
+.card{
+  background:var(--blanco);border-radius:var(--radio);overflow:hidden;
+  box-shadow:var(--sombra);display:flex;flex-direction:column;
+  transition:transform .15s, box-shadow .15s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(58,58,58,.10)}
+.card.apartado{opacity:.82}
+
+/* ---------- CARRUSEL DE FOTOS ---------- */
+.foto{aspect-ratio:1/1;position:relative;overflow:hidden}
+.slides{
+  display:flex;height:100%;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;               /* Firefox */
+}
+.slides::-webkit-scrollbar{display:none} /* Chrome/Safari */
+.slide{
+  flex:0 0 100%;height:100%;scroll-snap-align:center;
+  display:flex;align-items:center;justify-content:center;
+}
+.slide img{width:100%;height:100%;object-fit:cover}
+.slide .emoji{font-size:52px;opacity:.85}
+/* Tonos suaves alternos para placeholders sin foto */
+.slide.ph-1{background:var(--sage-claro)}
+.slide.ph-2{background:var(--beige-claro)}
+.slide.ph-3{background:#efe9df}
+
+/* Puntitos del carrusel */
+.dots{
+  position:absolute;bottom:8px;left:0;right:0;
+  display:flex;justify-content:center;gap:5px;pointer-events:none;
+}
+.dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(58,58,58,.28);transition:all .15s;
+}
+.dot.on{background:var(--blanco);box-shadow:0 0 3px rgba(0,0,0,.3);transform:scale(1.15)}
+
+.badges{position:absolute;top:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap;pointer-events:none}
+.badge{
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;
+}
+.badge-nuevo{background:var(--sage-oscuro);color:#fff}
+.badge-apartado{background:var(--gris);color:#fff}
+
+/* ---------- INFO Y PRECIOS ---------- */
+.info{padding:11px 12px 12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.nombre{font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;line-height:1.3}
+.detalles{font-size:12px;color:var(--gris)}
+
+/* Bloque de precio estilo Amazon:
+   precio final grande · % de descuento · precio anterior tachado */
+.precio-fila{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.precio-bloque{display:flex;flex-direction:column;gap:1px}
+.precio-linea{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.precio{font-family:'Nunito',sans-serif;font-weight:800;font-size:17px;color:var(--sage-oscuro)}
+.badge-desc{
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;
+  background:var(--beige-calido);color:#fff;
+  padding:2px 7px;border-radius:6px;
+}
+.precio-antes{font-size:12px;color:var(--gris);text-decoration:line-through}
+.talla-pill{
+  background:var(--sage-claro);color:var(--sage-oscuro);
+  font-weight:700;font-size:11px;padding:3px 8px;border-radius:999px;
+  align-self:flex-start;
+}
+.btn-quiero{
+  margin-top:9px;background:var(--sage);color:#fff;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;
+  padding:9px 0;border-radius:999px;width:100%;transition:background .15s;
+}
+.btn-quiero:hover{background:var(--sage-oscuro)}
+.btn-quiero:disabled{background:#d9d5cd;cursor:default}
+
+/* ---------- ESTADO VACÍO ---------- */
+.vacio{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--gris)}
+.vacio .emoji{font-size:44px;display:block;margin-bottom:10px}
+.vacio p{font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;color:var(--carbon)}
+.vacio span{font-size:13px}
+
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--carbon);color:#fff;font-size:13px;font-weight:600;
+  padding:11px 20px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.18);
+  opacity:0;transition:all .25s;z-index:100;max-width:88vw;text-align:center;
+}
+.toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{text-align:center;padding:26px 16px 34px;color:var(--gris);font-size:12px;letter-spacing:.1em}
+footer a{color:var(--sage-oscuro);font-weight:700;text-decoration:none}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= ENCABEZADO ================= -->
+<header>
+  <a class="logo" href="#" aria-label="babyloop">
+    <span class="logo-icono" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 4h8l2.5 3-2 1.8V16a4 4 0 0 1-4 4h-1a4 4 0 0 1-4-4V8.8l-2-1.8L8 4z"/>
+        <path d="M9.5 4a2.5 2.5 0 0 0 5 0"/>
+      </svg>
+    </span>
+    <span class="wordmark">babyloop</span>
+  </a>
+  <div class="tagline">Lo que necesitas en cada etapa.</div>
+</header>
+
+<!-- ================= BARRA ================= -->
+<div class="toolbar">
+  <button class="btn-filtros" id="btnFiltros" aria-expanded="false" aria-controls="panelFiltros">
+    Filtros <span class="num" id="numFiltros">0</span>
+  </button>
+  <select class="orden" id="orden" aria-label="Ordenar por">
+    <option value="reciente">Lo más nuevo</option>
+    <option value="menor">Menor precio</option>
+    <option value="mayor">Mayor precio</option>
+  </select>
+  <div class="contador" id="contador"></div>
+</div>
+
+<!-- ================= PANEL DE FILTROS ================= -->
+<div class="panel-filtros" id="panelFiltros">
+  <div class="grupo"><div class="grupo-titulo">Talla</div><div class="chips" data-filtro="talla"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Categoría</div><div class="chips" data-filtro="categoria"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Género</div><div class="chips" data-filtro="genero"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Condición</div><div class="chips" data-filtro="condicion"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Precio</div><div class="chips" data-filtro="precio"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Temporada</div><div class="chips" data-filtro="temporada"></div></div>
+  <div class="grupo"><div class="grupo-titulo">Promociones</div>
+    <div class="chips"><button class="chip oferta" id="chipOferta">🏷️ En oferta</button></div>
+  </div>
+  <div class="panel-acciones">
+    <button class="copiar-vista" id="copiarVista">🔗 Copiar link de esta vista</button>
+    <button class="limpiar" id="limpiar">Limpiar filtros</button>
+  </div>
+</div>
+
+<!-- ================= GRID ================= -->
+<main class="grid" id="grid"></main>
+
+<div class="toast" id="toast"></div>
+
+<footer>BABYLOOP · <a href="https://instagram.com/baby.loop.mx" target="_blank" rel="noopener">@BABY.LOOP.MX</a></footer>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — lo único que Mike edita
+   ============================================================ */
+const CONFIG = {
+  // 1) URL del Google Sheet publicado como CSV
+  //    (Archivo → Compartir → Publicar en la web → CSV).
+  //    Mientras esté vacío, el site usa los datos de ejemplo.
+  SHEET_CSV_URL: "",
+
+  // 2) Usuario de Instagram para el botón "Lo quiero"
+  INSTAGRAM_USER: "baby.loop.mx",
+
+  // 3) Días que una pieza se considera "nueva en el loop"
+  DIAS_NUEVO: 7,
+
+  // 4) Estados que SÍ se muestran en el catálogo.
+  //    Todo lo demás ("borrador", "vendido", "archivo") queda oculto.
+  //    Esta es la compuerta de aprobación: lo que llega de Instagram
+  //    entra como "borrador" y no se ve hasta que tú lo cambias.
+  ESTADOS_VISIBLES: ["disponible", "apartado"]
+};
+
+/* ============================================================
+   DATOS DE EJEMPLO
+   Nota: "precio" es el precio de venta actual.
+   "precio_antes" solo se llena cuando hay promoción
+   (debe ser mayor que precio para que aparezca la oferta).
+   ============================================================ */
+const EJEMPLO = [
+{id:"BL-0001",nombre:"Mameluco oso café",categoria:"mameluco",talla:"6m",genero:"unisex",condicion:"seminuevo",precio:180,precio_antes:240,marca:"Carter's",color:"café",temporada:"frio",fotos:"",estado:"disponible",fecha_alta:"2026-07-02",link_post:""},
+{id:"BL-0002",nombre:"Vestido flores amarillas",categoria:"vestido",talla:"9m",genero:"nina",condicion:"nuevo con etiqueta",precio:320,precio_antes:0,marca:"Zara Baby",color:"amarillo",temporada:"calor",fotos:"",estado:"disponible",fecha_alta:"2026-07-01",link_post:""},
+{id:"BL-0003",nombre:"Conjunto rayas menta 2 pzas",categoria:"conjunto",talla:"3m",genero:"unisex",condicion:"seminuevo",precio:220,precio_antes:0,marca:"H&M",color:"menta",temporada:"neutro",fotos:"",estado:"apartado",fecha_alta:"2026-06-28",link_post:""},
+{id:"BL-0004",nombre:"Suéter tejido crema",categoria:"sueter",talla:"18m",genero:"unisex",condicion:"usado bueno",precio:150,precio_antes:200,marca:"",color:"crema",temporada:"frio",fotos:"",estado:"disponible",fecha_alta:"2026-06-25",link_post:""},
+{id:"BL-0005",nombre:"Pantalón mezclilla suave",categoria:"pantalon",talla:"12m",genero:"nino",condicion:"seminuevo",precio:140,precio_antes:0,marca:"Gap",color:"azul",temporada:"neutro",fotos:"",estado:"disponible",fecha_alta:"2026-06-30",link_post:""},
+{id:"BL-0006",nombre:"Pijama estrellitas",categoria:"pijama",talla:"24m",genero:"unisex",condicion:"nuevo sin etiqueta",precio:190,precio_antes:0,marca:"Carter's",color:"gris",temporada:"neutro",fotos:"",estado:"disponible",fecha_alta:"2026-07-03",link_post:""},
+{id:"BL-0007",nombre:"Zapatitos primeros pasos",categoria:"calzado",talla:"12m",genero:"unisex",condicion:"seminuevo",precio:250,precio_antes:350,marca:"Stride Rite",color:"blanco",temporada:"neutro",fotos:"",estado:"disponible",fecha_alta:"2026-06-20",link_post:""},
+{id:"BL-0008",nombre:"Vestido lino rosa",categoria:"vestido",talla:"2-3a",genero:"nina",condicion:"nuevo con etiqueta",precio:380,precio_antes:0,marca:"Mango Kids",color:"rosa",temporada:"calor",fotos:"",estado:"disponible",fecha_alta:"2026-06-29",link_post:""},
+{id:"BL-0009",nombre:"Gorro y manoplas set",categoria:"accesorio",talla:"RN",genero:"unisex",condicion:"nuevo sin etiqueta",precio:90,precio_antes:0,marca:"",color:"beige",temporada:"frio",fotos:"",estado:"disponible",fecha_alta:"2026-07-03",link_post:""},
+{id:"BL-0010",nombre:"Conjunto marinero 3 pzas",categoria:"conjunto",talla:"9m",genero:"nino",condicion:"seminuevo",precio:260,precio_antes:0,marca:"Chicco",color:"azul marino",temporada:"calor",fotos:"",estado:"apartado",fecha_alta:"2026-06-22",link_post:""},
+{id:"BL-0011",nombre:"Mameluco algodón blanco x3",categoria:"mameluco",talla:"RN",genero:"unisex",condicion:"usado bueno",precio:120,precio_antes:160,marca:"Gerber",color:"blanco",temporada:"neutro",fotos:"",estado:"disponible",fecha_alta:"2026-06-18",link_post:""},
+{id:"BL-0012",nombre:"Suéter capucha orejitas",categoria:"sueter",talla:"18m",genero:"unisex",condicion:"seminuevo",precio:210,precio_antes:0,marca:"Zara Baby",color:"gris",temporada:"frio",fotos:"",estado:"disponible",fecha_alta:"2026-07-02",link_post:""},
+{id:"BL-0013",nombre:"Sandalias verano",categoria:"calzado",talla:"18m",genero:"nina",condicion:"usado bueno",precio:110,precio_antes:0,marca:"",color:"dorado",temporada:"calor",fotos:"",estado:"vendido",fecha_alta:"2026-06-10",link_post:""},
+{id:"BL-0014",nombre:"Pantalón pana verde",categoria:"pantalon",talla:"24m",genero:"unisex",condicion:"seminuevo",precio:160,precio_antes:0,marca:"H&M",color:"verde",temporada:"frio",fotos:"",estado:"disponible",fecha_alta:"2026-06-27",link_post:""}
+];
+
+/* Emoji por categoría — placeholder mientras no hay foto */
+const EMOJI = {mameluco:"👶",conjunto:"👕",vestido:"👗",falda:"🎀","playera/camisa":"👕","pantalon/short":"👖","sueter/chamarra":"🧥",pijama:"🌙",calzado:"👟",accesorio:"🧸","traje de baño":"🩱"};
+
+/* Rangos de precio: etiqueta visible + slug para la URL */
+const RANGOS = [
+  {etq:"Hasta $150", slug:"0-150",   min:0,   max:150},
+  {etq:"$150 – $250",slug:"150-250", min:150, max:250},
+  {etq:"$250 – $400",slug:"250-400", min:250, max:400},
+  {etq:"Más de $400",slug:"400",     min:400, max:Infinity}
+];
+
+/* Orden fijo de tallas */
+const ORDEN_TALLAS = ["RN","3m","6m","9m","12m","18m","24m","2-3a","4-5a","6-8a","10-12a"];
+
+/* Estado de la app */
+let productos = [];
+let filtros = {talla:new Set(),categoria:new Set(),genero:new Set(),condicion:new Set(),precio:new Set(),temporada:new Set()};
+let soloOferta = false;
+
+/* ============================================================
+   CARGA DE DATOS
+   ============================================================ */
+async function cargarDatos(){
+  if(CONFIG.SHEET_CSV_URL){
+    try{
+      // El parámetro de tiempo evita que el navegador sirva una copia vieja:
+      // así, en cuanto cambias una celda del Sheet, la mamá ve el cambio.
+      const sep = CONFIG.SHEET_CSV_URL.includes("?") ? "&" : "?";
+      const res = await fetch(CONFIG.SHEET_CSV_URL + sep + "t=" + Date.now());
+      productos = parsearCSV(await res.text());
+    }catch(e){
+      console.error("No se pudo leer el Sheet, usando ejemplo:", e);
+      productos = EJEMPLO;
+    }
+  }else{
+    productos = EJEMPLO;
+  }
+  productos = productos.map(normalizar);
+  construirChips();
+  leerURL();      // aplica los filtros que vengan en el link
+  render();
+}
+
+/* Parser de CSV: respeta comillas y comas internas */
+function parsearCSV(texto){
+  const filas = [];
+  let fila = [], celda = "", enComillas = false;
+  for(let i=0;i<texto.length;i++){
+    const c = texto[i];
+    if(enComillas){
+      if(c === '"' && texto[i+1] === '"'){celda+='"';i++;}
+      else if(c === '"'){enComillas=false;}
+      else celda+=c;
+    }else{
+      if(c === '"') enComillas=true;
+      else if(c === ',') {fila.push(celda);celda="";}
+      else if(c === '\n'){fila.push(celda);filas.push(fila);fila=[];celda="";}
+      else if(c !== '\r') celda+=c;
+    }
+  }
+  if(celda||fila.length){fila.push(celda);filas.push(fila);}
+  const cab = filas.shift().map(h=>h.trim().toLowerCase());
+  return filas.filter(f=>f.join("").trim()!=="").map(f=>{
+    const obj = {};
+    cab.forEach((h,i)=>obj[h]=(f[i]||"").trim());
+    return normalizar(obj);
+  });
+}
+
+/* ============================================================
+   NORMALIZACION
+   [REVISAR] es una marca interna de trabajo del inventario.
+   Nunca debe llegar a la pantalla de una clienta.
+   ============================================================ */
+function normalizar(p){
+  p.estado = (p.estado||"").trim().toLowerCase();
+  p.nombre = (p.nombre||"").replace(/\[REVISAR\]\s*/g,"").trim() || "Prenda";
+  p.categoria = (p.categoria||"").startsWith("[") ? "" : (p.categoria||"");
+  p.condicion = (p.condicion||"").startsWith("[") ? "" : (p.condicion||"");
+  p.precio = parseFloat(p.precio)||0;
+  p.precio_antes = parseFloat(p.precio_antes)||0;
+  return p;
+}
+
+/* ============================================================
+   COMPUERTA DE VISIBILIDAD
+   Un solo lugar decide qué se publica. Si algún día quieres
+   mostrar también los borradores, cambia CONFIG.ESTADOS_VISIBLES.
+   ============================================================ */
+function esVisible(p){
+  return CONFIG.ESTADOS_VISIBLES.includes((p.estado||"").trim().toLowerCase());
+}
+
+/* ¿La pieza tiene promoción válida? */
+function enOferta(p){ return p.precio_antes > p.precio && p.precio > 0; }
+
+/* ============================================================
+   FILTROS ⇄ URL
+   La URL siempre refleja los filtros activos, así Mike puede
+   filtrar, copiar el link y mandarlo a quien quiera.
+   Ejemplo: catalogo.html?talla=0-3m,3-6m&genero=nina&oferta=1
+   ============================================================ */
+const PARAMS = ["talla","categoria","genero","condicion","precio","temporada"];
+
+function leerURL(){
+  try{
+  const q = new URLSearchParams(location.search);
+  PARAMS.forEach(clave=>{
+    const val = q.get(clave);
+    if(!val) return;
+    val.split(",").forEach(v=>{
+      // el filtro de precio viaja como slug (0-150), lo demás tal cual
+      if(clave==="precio"){
+        const r = RANGOS.find(x=>x.slug===v.trim());
+        if(r) filtros.precio.add(r.etq);
+      }else{
+        filtros[clave].add(v.trim());
+      }
+    });
+  });
+  soloOferta = q.get("oferta")==="1";
+  const orden = q.get("orden");
+  if(["reciente","menor","mayor"].includes(orden)) document.getElementById("orden").value = orden;
+
+  // Marcar visualmente los chips que vienen activos desde la URL
+  document.querySelectorAll(".chips[data-filtro] .chip").forEach(ch=>{
+    const clave = ch.closest(".chips").dataset.filtro;
+    if(filtros[clave].has(ch.dataset.valor)) ch.classList.add("on");
+  });
+  document.getElementById("chipOferta").classList.toggle("on", soloOferta);
+
+  // Si el link trae filtros, abrir el panel para que se vean
+  const hayFiltros = PARAMS.some(k=>filtros[k].size) || soloOferta;
+  if(hayFiltros){
+    document.getElementById("panelFiltros").classList.add("abierto");
+    document.getElementById("btnFiltros").setAttribute("aria-expanded","true");
+  }
+  }catch(e){
+    /* Entorno restringido: arrancamos sin filtros desde URL */
+  }
+}
+
+function escribirURL(){
+  // En vistas previas embebidas (como la de Claude) el navegador
+  // bloquea history.replaceState. El try/catch evita que eso
+  // tumbe el catálogo: la URL simplemente no se actualiza ahí,
+  // pero en el hosting real funciona normal.
+  try{
+    const q = new URLSearchParams();
+    PARAMS.forEach(clave=>{
+      if(!filtros[clave].size) return;
+      const vals = [...filtros[clave]].map(v=>{
+        if(clave==="precio"){
+          const r = RANGOS.find(x=>x.etq===v);
+          return r ? r.slug : v;
+        }
+        return v;
+      });
+      q.set(clave, vals.join(","));
+    });
+    if(soloOferta) q.set("oferta","1");
+    const orden = document.getElementById("orden").value;
+    if(orden!=="reciente") q.set("orden", orden);
+    const nueva = q.toString() ? `?${q.toString()}` : location.pathname;
+    history.replaceState(null,"",nueva);
+  }catch(e){
+    /* Entorno restringido: seguimos sin actualizar la URL */
+  }
+}
+
+/* ============================================================
+   CHIPS DE FILTRO
+   ============================================================ */
+function construirChips(){
+  const visibles = productos.filter(esVisible);
+  const valores = {
+    talla: ORDEN_TALLAS.filter(t=>visibles.some(p=>p.talla===t)),
+    categoria: [...new Set(visibles.map(p=>p.categoria))].filter(c=>c && !c.startsWith("[")).sort(),
+    genero: ["nina","nino","unisex"].filter(g=>visibles.some(p=>p.genero===g)),
+    condicion: ["nuevo con etiqueta","nuevo sin etiqueta","seminuevo","usado bueno"].filter(c=>visibles.some(p=>p.condicion===c)),
+    precio: RANGOS.map(r=>r.etq),
+    temporada: ["calor","frio","neutro"].filter(t=>visibles.some(p=>p.temporada===t))
+  };
+  const bonito = v => ({nina:"niña",nino:"niño",frio:"frío"})[v] || v;
+  document.querySelectorAll(".chips[data-filtro]").forEach(cont=>{
+    const clave = cont.dataset.filtro;
+    cont.innerHTML = "";
+    valores[clave].forEach(v=>{
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.dataset.valor = v;
+      b.textContent = bonito(v);
+      b.onclick = ()=>{
+        filtros[clave].has(v) ? filtros[clave].delete(v) : filtros[clave].add(v);
+        b.classList.toggle("on");
+        render();
+      };
+      cont.appendChild(b);
+    });
+  });
+}
+
+function pasaFiltros(p){
+  if(soloOferta && !enOferta(p)) return false;
+  if(filtros.talla.size && !filtros.talla.has(p.talla)) return false;
+  if(filtros.categoria.size && !filtros.categoria.has(p.categoria)) return false;
+  if(filtros.genero.size && !filtros.genero.has(p.genero)) return false;
+  if(filtros.condicion.size && !filtros.condicion.has(p.condicion)) return false;
+  if(filtros.temporada.size && !filtros.temporada.has(p.temporada)) return false;
+  if(filtros.precio.size){
+    const enRango = [...filtros.precio].some(etq=>{
+      const r = RANGOS.find(x=>x.etq===etq);
+      return p.precio > r.min - 0.01 && p.precio <= r.max;
+    });
+    if(!enRango) return false;
+  }
+  return true;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function esNuevo(p){
+  const dias = (Date.now() - new Date(p.fecha_alta+"T12:00:00")) / 86400000;
+  return dias <= CONFIG.DIAS_NUEVO;
+}
+
+/* Arma el carrusel de un producto: fotos reales o 3 placeholders */
+function htmlCarrusel(p){
+  const urls = (p.fotos||"").split(",").map(u=>u.trim()).filter(Boolean).slice(0,3);
+  let slides, n;
+  if(urls.length){
+    n = urls.length;
+    slides = urls.map((u,i)=>
+      `<div class="slide"><img src="${u}" alt="${p.nombre} — foto ${i+1}" ${i?'loading="lazy"':''}
+         onerror="this.parentElement.classList.add('ph-1');this.remove();"></div>`
+    ).join("");
+  }else{
+    // Sin fotos aún: 3 slides de muestra para ver el carrusel funcionando
+    n = 3;
+    slides = [1,2,3].map(i=>
+      `<div class="slide ph-${i}"><span class="emoji" aria-hidden="true">${EMOJI[p.categoria]||"👶"}</span></div>`
+    ).join("");
+  }
+  const dots = n>1
+    ? `<div class="dots">${Array.from({length:n},(_,i)=>`<span class="dot ${i===0?"on":""}"></span>`).join("")}</div>`
+    : "";
+  return `<div class="slides" data-carrusel>${slides}</div>${dots}`;
+}
+
+function render(){
+  escribirURL(); // la URL siempre refleja la vista actual
+
+  const grid = document.getElementById("grid");
+  const orden = document.getElementById("orden").value;
+
+  // Solo se muestra lo aprobado (disponible / apartado).
+  // Borradores, vendidos y archivo quedan fuera automáticamente.
+  let lista = productos.filter(p=>esVisible(p) && pasaFiltros(p));
+
+  if(orden==="menor") lista.sort((a,b)=>a.precio-b.precio);
+  else if(orden==="mayor") lista.sort((a,b)=>b.precio-a.precio);
+  else lista.sort((a,b)=>new Date(b.fecha_alta)-new Date(a.fecha_alta));
+
+  const disp = lista.filter(p=>p.estado==="disponible").length;
+  document.getElementById("contador").innerHTML =
+    `<strong>${disp}</strong> ${disp===1?"pieza disponible":"piezas disponibles"}`;
+
+  const n = Object.values(filtros).reduce((s,set)=>s+set.size,0) + (soloOferta?1:0);
+  const btn = document.getElementById("btnFiltros");
+  document.getElementById("numFiltros").textContent = n;
+  btn.classList.toggle("activo", n>0);
+
+  if(!lista.length){
+    grid.innerHTML = `<div class="vacio"><span class="emoji">🍃</span>
+      <p>No hay piezas con esos filtros</p>
+      <span>Prueba quitando alguno — el inventario cambia cada semana.</span></div>`;
+    return;
+  }
+
+  grid.innerHTML = lista.map(p=>{
+    const oferta = enOferta(p);
+    const desc = oferta ? Math.round((1 - p.precio/p.precio_antes)*100) : 0;
+    const badges = [
+      esNuevo(p) && p.estado==="disponible" ? `<span class="badge badge-nuevo">Nuevo</span>` : "",
+      p.estado==="apartado" ? `<span class="badge badge-apartado">Apartado</span>` : ""
+    ].join("");
+    return `
+    <article class="card ${p.estado==="apartado"?"apartado":""}">
+      <div class="foto">
+        ${htmlCarrusel(p)}
+        <div class="badges">${badges}</div>
+      </div>
+      <div class="info">
+        <div class="nombre">${p.nombre}</div>
+        <div class="detalles">${[p.condicion,p.marca].filter(Boolean).join(" · ")}</div>
+        <div class="precio-fila">
+          <div class="precio-bloque">
+            <div class="precio-linea">
+              <span class="precio">$${p.precio.toLocaleString("es-MX")}</span>
+              ${oferta?`<span class="badge-desc">−${desc}%</span>`:""}
+            </div>
+            ${oferta?`<span class="precio-antes">Antes: $${p.precio_antes.toLocaleString("es-MX")}</span>`:""}
+          </div>
+          <span class="talla-pill">${p.talla}</span>
+        </div>
+        ${p.estado==="apartado"
+          ? `<button class="btn-quiero" disabled>Apartado 💛</button>`
+          : `<button class="btn-quiero" onclick="loQuiero('${p.id}')">Lo quiero</button>`}
+      </div>
+    </article>`;
+  }).join("");
+
+  activarCarruseles();
+}
+
+/* Actualiza el puntito activo cuando la mamá hace swipe */
+function activarCarruseles(){
+  document.querySelectorAll("[data-carrusel]").forEach(slides=>{
+    const dots = slides.parentElement.querySelectorAll(".dot");
+    if(!dots.length) return;
+    let tick = false;
+    slides.addEventListener("scroll", ()=>{
+      if(tick) return;
+      tick = true;
+      requestAnimationFrame(()=>{
+        const i = Math.round(slides.scrollLeft / slides.clientWidth);
+        dots.forEach((d,j)=>d.classList.toggle("on", j===i));
+        tick = false;
+      });
+    }, {passive:true});
+  });
+}
+
+/* ============================================================
+   BOTÓN "LO QUIERO" → DM de Instagram
+   Instagram no permite pre-llenar mensajes, así que copiamos
+   el texto al portapapeles y abrimos el DM: pegar y enviar.
+   ============================================================ */
+/* Copia texto al portapapeles con doble respaldo:
+   1) API moderna  2) textarea oculto (método clásico)
+   Devuelve true si se logró copiar. */
+async function copiarTexto(txt){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(txt);
+      return true;
+    }
+  }catch(e){ /* pasa al respaldo */ }
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+
+async function loQuiero(id){
+  const p = productos.find(x=>x.id===id);
+  const msj = `Hola! Me interesa ${p.nombre} (${p.id}) que vi en el catálogo 💚`;
+  const abrirDM = ()=>window.open(`https://ig.me/m/${CONFIG.INSTAGRAM_USER}`,"_blank");
+  const copiado = await copiarTexto(msj);
+  if(copiado){
+    toast("Mensaje copiado ✓ pégalo en el DM");
+    setTimeout(abrirDM, 900);
+  }else{
+    abrirDM();
+  }
+}
+
+function toast(txt){
+  const t = document.getElementById("toast");
+  t.textContent = txt;
+  t.classList.add("ver");
+  setTimeout(()=>t.classList.remove("ver"), 2600);
+}
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+document.getElementById("btnFiltros").onclick = function(){
+  const panel = document.getElementById("panelFiltros");
+  const abierto = panel.classList.toggle("abierto");
+  this.setAttribute("aria-expanded", abierto);
+};
+document.getElementById("orden").onchange = render;
+document.getElementById("chipOferta").onclick = function(){
+  soloOferta = !soloOferta;
+  this.classList.toggle("on", soloOferta);
+  render();
+};
+document.getElementById("limpiar").onclick = ()=>{
+  Object.values(filtros).forEach(s=>s.clear());
+  soloOferta = false;
+  document.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on"));
+  render();
+};
+/* Copiar el link con los filtros actuales — para mandarlo por DM */
+document.getElementById("copiarVista").onclick = async ()=>{
+  const ok = await copiarTexto(location.href);
+  toast(ok ? "Link copiado ✓ mándalo por DM"
+           : "No se pudo copiar — copia la URL del navegador");
+};
+
+cargarDatos();
+</script>
+</body>
+</html>
