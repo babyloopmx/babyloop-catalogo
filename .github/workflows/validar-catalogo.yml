@@ -1,0 +1,235 @@
+# ==================================================================
+# BABYLOOP · REVISION AUTOMATICA DEL CATALOGO
+# ==================================================================
+# Que hace:
+#   Cada vez que subes algo al repositorio, revisa las fotos y el
+#   archivo del catalogo, y te deja un reporte legible en GitHub.
+#
+# Que revisa:
+#   1. Que ninguna foto pase de 25 MB (GitHub la rechazaria)
+#   2. Que ninguna foto pese de mas para 4G
+#   3. Que los nombres sigan el formato BL-0000-1.webp
+#   4. Que no haya la misma pieza repetida en dos formatos
+#   5. Que index.html exista y tenga la URL del Sheet puesta
+#   6. Si el Sheet esta publicado: que cada foto corresponda a una
+#      pieza real y que cada pieza publicada tenga sus fotos
+#
+# Costo: cero. Los repositorios publicos tienen Actions gratis.
+#
+# Instalacion: crea este archivo en el repo, con esta ruta exacta:
+#   .github/workflows/validar-catalogo.yml
+# ==================================================================
+
+name: Revisar catalogo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:      # tambien se puede correr a mano desde la pestaña Actions
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Traer los archivos del repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Revisar fotos y catalogo
+        shell: bash
+        run: |
+          python3 <<'PYTHON'
+          import os, re, sys, csv, io, urllib.request
+          from pathlib import Path
+
+          # ---------- Limites ----------
+          LIMITE_GITHUB = 25 * 1024 * 1024   # GitHub rechaza por navegador arriba de esto
+          LIMITE_COMODO = 400 * 1024         # arriba de esto la foto tarda en 4G
+          PATRON = re.compile(r"^BL-\d{4}-[123]\.(webp|jpg|jpeg|png|heic)$", re.IGNORECASE)
+          # Los archivos del export de Instagram se llaman solo con numeros,
+          # por ejemplo 17844868605680146.jpg. Si aparece uno asi en el repo,
+          # es que se subio el original en vez de la version procesada.
+          CRUDO = re.compile(r"^\d{10,}\.\w+$")
+
+          def plural(n, singular, plural_):
+              """El reporte lo lee una persona: 1 foto, no 1 fotos."""
+              return f"{n} {singular if n == 1 else plural_}"
+
+          errores, avisos, notas = [], [], []
+          resumen = []
+
+          # ---------- 1. Las fotos ----------
+          carpeta = Path("fotos")
+          fotos = []
+          if not carpeta.is_dir():
+              avisos.append("No existe la carpeta `fotos/`. Si es un repositorio recien creado, es normal.")
+          else:
+              fotos = [a for a in carpeta.iterdir() if a.is_file() and a.name != ".gitkeep"]
+
+          pesadas, mal_nombradas, crudas, ids = [], [], [], {}
+          for foto in fotos:
+              peso = foto.stat().st_size
+              if peso > LIMITE_GITHUB:
+                  errores.append(f"`{foto.name}` pesa {peso/1048576:.1f} MB y pasa el limite de 25 MB de GitHub.")
+              elif peso > LIMITE_COMODO:
+                  pesadas.append((foto.name, peso))
+
+              if not PATRON.match(foto.name):
+                  if CRUDO.match(foto.name):
+                      crudas.append(foto.name)
+                  else:
+                      mal_nombradas.append(foto.name)
+                  continue
+
+              pid = foto.name.split("-")[0] + "-" + foto.name.split("-")[1]
+              ids.setdefault(pid, []).append(foto.name)
+
+          if crudas:
+              errores.append(
+                  plural(len(crudas), "archivo viene", "archivos vienen")
+                  + " con el nombre original de Instagram (solo numeros): "
+                  + ", ".join(f"`{n}`" for n in crudas[:6])
+                  + (f" y {len(crudas)-6} mas. " if len(crudas) > 6 else ". ")
+                  + "Esas son fotos del export sin procesar. Al repositorio van las que "
+                  + "genera la sincronizacion, ya renombradas por id de prenda "
+                  + "(BL-0743-1.webp). Sin ese nombre el catalogo no las encuentra."
+              )
+
+          if mal_nombradas:
+              errores.append(
+                  "Hay archivos con nombre fuera de formato. El catalogo no los va a encontrar: "
+                  + ", ".join(f"`{n}`" for n in mal_nombradas[:10])
+                  + (f" y {len(mal_nombradas)-10} mas." if len(mal_nombradas) > 10 else "")
+              )
+
+          if pesadas:
+              pesadas.sort(key=lambda x: -x[1])
+              avisos.append(
+                  plural(len(pesadas), "foto pesa", "fotos pesan") + " mas de 400 KB y van a tardar en 4G. "
+                  f"La mas pesada es `{pesadas[0][0]}` con {pesadas[0][1]/1024:.0f} KB."
+              )
+
+          # Misma pieza en dos formatos: el catalogo solo va a pedir uno
+          duplicadas = []
+          for pid, archivos in ids.items():
+              vistos = {}
+              for a in archivos:
+                  base = a.rsplit(".", 1)[0].lower()
+                  vistos.setdefault(base, []).append(a)
+              for base, lista in vistos.items():
+                  if len(lista) > 1:
+                      duplicadas.append(", ".join(lista))
+          if duplicadas:
+              avisos.append("Misma imagen en dos formatos: " + "; ".join(duplicadas[:5]))
+
+          peso_total = sum(f.stat().st_size for f in fotos) if fotos else 0
+          resumen.append(("Fotos en el repositorio", f"{len(fotos)}"))
+          resumen.append(("Piezas con foto", f"{len(ids)}"))
+          resumen.append(("Peso total", f"{peso_total/1048576:.1f} MB"))
+
+          # ---------- 2. El catalogo ----------
+          index = Path("index.html")
+          url_sheet = ""
+          if not index.is_file():
+              errores.append("Falta `index.html` en la raiz. Sin ese archivo GitHub Pages no publica nada.")
+          else:
+              html = index.read_text(encoding="utf-8", errors="ignore")
+              m = re.search(r'SHEET_CSV_URL\s*:\s*"([^"]*)"', html)
+              if m is None:
+                  avisos.append("No encontre `SHEET_CSV_URL` dentro de index.html. Revisa que el bloque CONFIG siga ahi.")
+              elif not m.group(1).strip():
+                  avisos.append("`SHEET_CSV_URL` esta vacio: el catalogo va a mostrar los datos de ejemplo, no tu inventario.")
+              else:
+                  url_sheet = m.group(1).strip()
+                  resumen.append(("Sheet conectado", "si"))
+
+          # ---------- 3. Cruce con el inventario ----------
+          if url_sheet:
+              try:
+                  with urllib.request.urlopen(url_sheet, timeout=30) as r:
+                      texto = r.read().decode("utf-8", errors="replace")
+                  filas = list(csv.DictReader(io.StringIO(texto)))
+                  publicables = [f for f in filas
+                                 if (f.get("estado") or "").strip().lower() in ("disponible", "apartado")]
+                  ids_sheet = {(f.get("id") or "").strip() for f in filas}
+
+                  resumen.append(("Piezas en el inventario", f"{len(filas)}"))
+                  resumen.append(("Piezas publicadas", f"{len(publicables)}"))
+
+                  huerfanas = sorted(pid for pid in ids if pid not in ids_sheet)
+                  if huerfanas:
+                      avisos.append(
+                          plural(len(huerfanas), "foto no corresponde", "fotos no corresponden")
+                          + " a ninguna pieza del inventario: "
+                          + ", ".join(f"`{h}`" for h in huerfanas[:10])
+                      )
+
+                  sin_foto = [f["id"] for f in publicables if not (f.get("fotos") or "").strip()]
+                  if sin_foto:
+                      avisos.append(
+                          plural(len(sin_foto), "pieza publicada no tiene", "piezas publicadas no tienen")
+                          + " foto en el Sheet: "
+                          + ", ".join(f"`{s}`" for s in sin_foto[:10])
+                          + (f" y {len(sin_foto)-10} mas." if len(sin_foto) > 10 else "")
+                      )
+
+                  # Una pieza publicada que apunta a una foto que no esta en el repo
+                  faltantes = []
+                  for f in publicables:
+                      for u in (f.get("fotos") or "").split(","):
+                          u = u.strip()
+                          if not u:
+                              continue
+                          nombre = u.rsplit("/", 1)[-1]
+                          if nombre.startswith("BL-") and not (carpeta / nombre).is_file():
+                              faltantes.append(nombre)
+                  if faltantes:
+                      errores.append(
+                          plural(len(faltantes), "foto que el catalogo va a pedir no esta",
+                                 "fotos que el catalogo va a pedir no estan")
+                          + " en el repositorio: "
+                          + ", ".join(f"`{n}`" for n in faltantes[:10])
+                          + (f" y {len(faltantes)-10} mas." if len(faltantes) > 10 else "")
+                      )
+                  if not huerfanas and not faltantes and not sin_foto:
+                      notas.append("Cada pieza publicada tiene su foto y cada foto tiene su pieza.")
+              except Exception as e:
+                  avisos.append(f"No pude leer el Sheet publicado para cruzar la informacion: {e}")
+          else:
+              notas.append("El cruce con el inventario se salta porque el Sheet todavia no esta conectado.")
+
+          # ---------- 4. Reporte ----------
+          L = ["## Revision del catalogo BabyLoop", ""]
+          L.append("| Concepto | Valor |")
+          L.append("| --- | ---: |")
+          for k, v in resumen:
+              L.append(f"| {k} | {v} |")
+          L.append("")
+
+          if errores:
+              L.append("### Hay que arreglar esto")
+              L += [f"- {e}" for e in errores] + [""]
+          if avisos:
+              L.append("### Conviene revisar")
+              L += [f"- {a}" for a in avisos] + [""]
+          if notas:
+              L.append("### Notas")
+              L += [f"- {n}" for n in notas] + [""]
+          if not errores and not avisos:
+              L.append("Todo en orden. El catalogo esta listo para publicarse.")
+
+          reporte = "\n".join(L)
+          print(reporte)
+          resumen_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if resumen_path:
+              with open(resumen_path, "a", encoding="utf-8") as f:
+                  f.write(reporte + "\n")
+
+          # Solo los errores tumban la revision. Los avisos informan y ya.
+          sys.exit(1 if errores else 0)
+          PYTHON
