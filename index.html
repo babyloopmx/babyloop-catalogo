@@ -400,9 +400,25 @@ function normalizar(p){
   p.nombre = (p.nombre||"").replace(/\[REVISAR\]\s*/g,"").trim() || "Prenda";
   p.categoria = (p.categoria||"").startsWith("[") ? "" : (p.categoria||"");
   p.condicion = (p.condicion||"").startsWith("[") ? "" : (p.condicion||"");
-  p.precio = parseFloat(p.precio)||0;
-  p.precio_antes = parseFloat(p.precio_antes)||0;
+  p.precio = aNumero(p.precio);
+  p.precio_antes = aNumero(p.precio_antes);
   return p;
+}
+
+/* ============================================================
+   PRECIOS
+   El Sheet publica los precios con signo de peso y separador
+   de miles ("$1,200"). parseFloat de ese texto devuelve NaN,
+   y por eso todo el catalogo mostraba $0. Aqui se limpia el
+   texto antes de convertirlo.
+   ============================================================ */
+function aNumero(valor){
+  if(typeof valor === "number") return valor;
+  const limpio = String(valor || "")
+    .replace(/[^\d.,-]/g, "")   // fuera $, espacios, letras
+    .replace(/,/g, "");          // el separador de miles no cuenta
+  const n = parseFloat(limpio);
+  return isFinite(n) && n >= 0 ? n : 0;
 }
 
 /* ============================================================
