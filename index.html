@@ -427,7 +427,13 @@ function aNumero(valor){
    mostrar también los borradores, cambia CONFIG.ESTADOS_VISIBLES.
    ============================================================ */
 function esVisible(p){
-  return CONFIG.ESTADOS_VISIBLES.includes((p.estado||"").trim().toLowerCase());
+  // Dos condiciones, no una:
+  // 1) el estado tiene que ser uno de los publicables, y
+  // 2) la pieza tiene que tener al menos una foto.
+  // Lo segundo evita que una prenda sin imagen llegue al catalogo:
+  // un cuadro vacio se ve peor que no aparecer.
+  if(!CONFIG.ESTADOS_VISIBLES.includes((p.estado||"").trim().toLowerCase())) return false;
+  return (p.fotos||"").trim() !== "";
 }
 
 /* ¿La pieza tiene promoción válida? */
