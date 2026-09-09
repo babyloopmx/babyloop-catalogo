@@ -404,8 +404,22 @@ function aplicarCorrecciones() {
     datos[presentes[p]] = hoja.getRange(2, cols[presentes[p]], ultima - 1, 1).getValues();
   }
 
-  // 3. Aplicar en memoria
-  var celdas = 0, tocadas = {};
+  // 3. Escribir CELDA POR CELDA, solo donde cambia
+  //
+  // Por que no de una sola escritura por columna, que seria mas rapido:
+  //   Varias columnas (categoria, condicion, talla, genero, temporada)
+  //   tienen lista desplegable. Google rechaza una escritura que meta
+  //   un valor fuera de la lista, y aborta TODO el bloque. Como hoy
+  //   muchas celdas dicen [REVISAR] --que no esta en ninguna lista--,
+  //   reescribir la columna entera se cae en la primera de esas celdas
+  //   aunque no la estemos cambiando.
+  //
+  //   Escribiendo solo las celdas que cambian, [REVISAR] nunca se
+  //   vuelve a escribir y la lista deja de estorbar. Y si algun valor
+  //   nuevo tampoco esta en la lista, se anota y se sigue, en vez de
+  //   tumbar la corrida completa.
+  var celdas = 0, tocadas = {}, rechazos = {};
+
   for (var f = 0; f < ids.length; f++) {
     var id = String(ids[f][0]).trim();
     var corr = cambios[id];
@@ -425,25 +439,34 @@ function aplicarCorrecciones() {
       var nuevo = String(corr[campo]);
       if (nuevo === actual) { continue; }
 
-      datos[campo][f][0] = nuevo;
-      celdas++;
-      tocadas[id] = true;
+      try {
+        hoja.getRange(f + 2, cols[campo]).setValue(nuevo);
+        celdas++;
+        tocadas[id] = true;
+      } catch (err) {
+        var clave = campo + ' = "' + nuevo + '"';
+        rechazos[clave] = (rechazos[clave] || 0) + 1;
+      }
     }
-  }
-
-  // 4. Una sola escritura por columna
-  for (var w = 0; w < presentes.length; w++) {
-    var campo2 = presentes[w];
-    hoja.getRange(2, cols[campo2], datos[campo2].length, 1).setValues(datos[campo2]);
   }
   SpreadsheetApp.flush();
 
-  ui.alert(
+  var texto =
     'Correcciones aplicadas\n\n' +
     'Generadas el      : ' + (doc.generado || 'sin fecha') + '\n' +
     'Piezas corregidas : ' + Object.keys(tocadas).length + '\n' +
     'Celdas escritas   : ' + celdas + '\n\n' +
-    'Solo se llenaron celdas vacias o marcadas [REVISAR].');
+    'Solo se llenaron celdas vacias o marcadas [REVISAR].';
+
+  var listaRechazos = Object.keys(rechazos);
+  if (listaRechazos.length) {
+    texto += '\n\nEstos valores los rechazo la lista desplegable de su ' +
+             'columna. Agregalos a la lista si los quieres usar:\n';
+    for (var q = 0; q < listaRechazos.length && q < 12; q++) {
+      texto += '\n  ' + listaRechazos[q] + '  (' + rechazos[listaRechazos[q]] + ')';
+    }
+  }
+  ui.alert(texto);
 }
 
 
