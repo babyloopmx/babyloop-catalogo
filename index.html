@@ -295,7 +295,14 @@ const CONFIG = {
   //    Todo lo demás ("borrador", "vendido", "archivo") queda oculto.
   //    Esta es la compuerta de aprobación: lo que llega de Instagram
   //    entra como "borrador" y no se ve hasta que tú lo cambias.
-  ESTADOS_VISIBLES: ["disponible", "apartado"]
+  ESTADOS_VISIBLES: ["disponible", "apartado"],
+
+  // 5) Cuántos drops recientes se muestran, y cuántas piezas
+  //    necesita una fecha para contar como drop (así una
+  //    publicación suelta no cuenta). Los borradores no cuentan:
+  //    un drop entra a la cuenta cuando ya aprobaste sus piezas.
+  DROPS_VISIBLES: 3,
+  MINIMO_POR_DROP: 5
 };
 
 /* ============================================================
@@ -337,6 +344,7 @@ const ORDEN_TALLAS = ["RN","3m","6m","9m","12m","18m","24m","2-3a","4-5a","6-8a"
 
 /* Estado de la app */
 let productos = [];
+let dropsVigentes = new Set();   // fechas de los últimos drops (ver calcularDropsVigentes)
 let filtros = {talla:new Set(),categoria:new Set(),genero:new Set(),condicion:new Set(),precio:new Set(),temporada:new Set()};
 let soloOferta = false;
 
@@ -359,6 +367,7 @@ async function cargarDatos(){
     productos = EJEMPLO;
   }
   productos = productos.map(normalizar);
+  dropsVigentes = calcularDropsVigentes(productos);
   construirChips();
   leerURL();      // aplica los filtros que vengan en el link
   render();
@@ -427,13 +436,33 @@ function aNumero(valor){
    mostrar también los borradores, cambia CONFIG.ESTADOS_VISIBLES.
    ============================================================ */
 function esVisible(p){
-  // Dos condiciones, no una:
-  // 1) el estado tiene que ser uno de los publicables, y
-  // 2) la pieza tiene que tener al menos una foto.
+  // Tres condiciones:
+  // 1) el estado tiene que ser uno de los publicables,
+  // 2) la pieza tiene que tener al menos una foto, y
+  // 3) tiene que ser de uno de los últimos drops.
   // Lo segundo evita que una prenda sin imagen llegue al catalogo:
   // un cuadro vacio se ve peor que no aparecer.
+  // Lo tercero archiva solo lo viejo: nadie tiene que correr nada.
   if(!CONFIG.ESTADOS_VISIBLES.includes((p.estado||"").trim().toLowerCase())) return false;
-  return (p.fotos||"").trim() !== "";
+  if((p.fotos||"").trim() === "") return false;
+  return dropsVigentes.has((p.fecha_alta||"").trim());
+}
+
+/* Los últimos drops: fechas con suficientes piezas ya aprobadas.
+   Se calcula aquí, con los datos del Sheet, cada vez que alguien
+   abre el catálogo. Cuando entra un drop nuevo, el más viejo sale solo. */
+function calcularDropsVigentes(lista){
+  const conteo = {};
+  lista.forEach(p=>{
+    const f = (p.fecha_alta||"").trim();
+    if(f && p.estado && p.estado !== "borrador") conteo[f] = (conteo[f]||0) + 1;
+  });
+  return new Set(
+    Object.keys(conteo)
+      .filter(f=>conteo[f] >= CONFIG.MINIMO_POR_DROP)
+      .sort().reverse()
+      .slice(0, CONFIG.DROPS_VISIBLES)
+  );
 }
 
 /* ¿La pieza tiene promoción válida? */
